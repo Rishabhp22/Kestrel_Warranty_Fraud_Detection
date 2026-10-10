@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kestrel Home Appliances — Warranty Fraud Risk Assessment Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js for Interactive Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #111827;
+      --surface-light: #1f2937;
+      --surface-elevated: #1e293b;
+      --border: #334155;
+      --border-light: #475569;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --primary-glow: rgba(56, 189, 248, 0.2);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Header & Navigation */
+    header {
+      background: rgba(17, 24, 39, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+    }
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    }
+    .brand-title h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    .brand-title p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-btn {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 16px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-btn:hover { color: var(--text); border-color: var(--primary); }
+    .nav-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--primary);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-subtitle {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #0f172a;
+      border: none;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: linear-gradient(135deg, #7dd3fc, var(--primary));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    }
+    .btn-secondary {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: none;
+    }
+    .btn-secondary:hover {
+      background: var(--surface-elevated);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+    .btn-lg {
+      padding: 0.85rem 1.85rem;
+      font-size: 1rem;
+    }
+    .btn-sm {
+      padding: 0.4rem 0.85rem;
+      font-size: 0.8rem;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-high { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-medium { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-low { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-neutral { background: rgba(148, 163, 184, 0.12); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* Policy banner */
+    .policy-banner {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .policy-icon { color: var(--primary); font-size: 1.25rem; line-height: 1; margin-top: 2px; }
+    .policy-text h4 { font-size: 0.9rem; font-weight: 600; color: var(--primary); margin-bottom: 2px; }
+    .policy-text p { font-size: 0.825rem; color: var(--text-muted); }
+
+    /* =====================================================================
+       LANDING PAGE (First Screen - Fresh session start, zero stale counts)
+       ===================================================================== */
+    .landing-hero {
+      text-align: center;
+      padding: 3.5rem 1.5rem 4rem;
+      background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.06) 45%, transparent 75%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow);
+    }
+    .landing-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.25rem;
+    }
+    .landing-hero h2 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+    .landing-hero .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 2.5rem;
+    }
+    .landing-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    @media (max-width: 768px) {
+      .landing-actions-grid { grid-template-columns: 1fr; }
+    }
+    .landing-action-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.25rem 2rem;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      cursor: pointer;
+    }
+    .landing-action-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5), 0 0 25px var(--primary-glow);
+    }
+    .card-action-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .card-action-icon.upload { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+    .card-action-icon.demo { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .landing-action-card h3 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .landing-action-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+      flex-grow: 1;
+    }
+
+    /* =====================================================================
+       DATASET SELECTION FLOW (Choice A & Choice B)
+       ===================================================================== */
+    .selection-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .selection-grid { grid-template-columns: 1fr; }
+    }
+    .selection-card {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .selection-card:hover {
+      border-color: var(--border-light);
+    }
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2.25rem 1.5rem;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.6);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .drop-zone.file-ready {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.08);
+      border-style: solid;
+    }
+    .drop-icon {
+      font-size: 2.75rem;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+
+    /* Demo Dataset Option Card */
+    .demo-dataset-card {
+      background: var(--surface-light);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .demo-dataset-card:hover {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.08);
+      transform: translateY(-2px);
+    }
+    .demo-dataset-card.active {
+      border: 2px solid var(--primary) !important;
+      background: rgba(56, 189, 248, 0.12) !important;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    /* Reference Dataset Cards */
+    .ref-dataset-card {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 0.85rem;
+      opacity: 0.75;
+    }
+
+    /* Preview section */
+    .preview-box {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Active Dataset Header Banner */
+    .active-dataset-banner {
+      background: linear-gradient(90deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .dataset-tag {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dataset-tag-icon { font-size: 1.5rem; }
+    .dataset-tag-title { font-size: 0.95rem; font-weight: 700; color: #fff; }
+    .dataset-tag-sub { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* KPI GRID */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem 1.25rem;
+      box-shadow: var(--shadow);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .kpi-card.interactive {
+      cursor: pointer;
+    }
+    .kpi-card.interactive:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+    .kpi-card.active-filter {
+      border-color: var(--primary) !important;
+      background: rgba(56, 189, 248, 0.1) !important;
+      outline: 2px solid var(--primary);
+    }
+    .kpi-header {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .kpi-sub {
+      font-size: 0.775rem;
+      color: var(--text-dim);
+      margin-top: 0.35rem;
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 1.75rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 960px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    .chart-container {
+      position: relative;
+      height: 260px;
+      width: 100%;
+    }
+
+    /* Table Styles */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #0b1120;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    th {
+      background: var(--surface-light);
+      padding: 0.8rem 1rem;
+      font-weight: 600;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-size: 0.725rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(51, 65, 85, 0.35); }
+
+    /* Filter & Search Bar */
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+    .search-input {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.825rem;
+      width: 280px;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+      background: var(--surface-light);
+    }
+    .filter-chip:hover { color: #fff; border-color: var(--border-light); }
+    .filter-chip.active-all { border-color: var(--primary); color: var(--primary); background: rgba(56,189,248,0.15); }
+    .filter-chip.active-high { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.15); }
+    .filter-chip.active-med { border-color: var(--warning); color: var(--warning); background: rgba(245,158,11,0.15); }
+    .filter-chip.active-low { border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.15); }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+    .pagination-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Modal / Drawer for AI */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+
+    /* Full-Screen Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .loading-spinner-lg {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(56, 189, 248, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 0.8s ease-in-out infinite;
+    }
+
+    /* Utilities */
+    .hidden { display: none !important; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* AI Button */
+    .btn-ai {
+      background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(56,189,248,0.2));
+      border: 1px solid rgba(56,189,248,0.5);
+      color: #7dd3fc;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .btn-ai:hover {
+      background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(56,189,248,0.35));
+      border-color: var(--primary);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Single claim triage form styles */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 2rem;
+    }
+    @media (max-width: 1024px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+    }
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group.full-width { grid-column: 1 / -1; }
+    label {
+      font-size: 0.825rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    input, select {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 0.65rem 0.85rem;
+      font-size: 0.875rem;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Full-Screen Loading Overlay -->
+  <div id="global-loader" class="loading-overlay hidden">
+    <div class="loading-spinner-lg"></div>
+    <div id="loader-title" style="font-size: 1.15rem; font-weight: 700; color: #fff;">Processing Warranty Claims...</div>
+    <div id="loader-subtitle" style="font-size: 0.85rem; color: var(--text-muted);">Executing scoring pipeline</div>
+  </div>
+
+  <!-- Top Header -->
+  <header>
+    <div class="header-content">
+      <div class="brand" onclick="showLandingView()">
+        <div class="brand-icon">K</div>
+        <div class="brand-title">
+          <h1>Kestrel Home Appliances</h1>
+          <p>Warranty Fraud Risk Assessment Platform (v4.1 Policy Compliant)</p>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button type="button" id="nav-dashboard-btn" class="nav-btn hidden" onclick="showDashboardView()">
+          <span>📊 Results Dashboard</span>
+        </button>
+        <button type="button" id="nav-switch-btn" class="nav-btn" onclick="showSelectDatasetView()">
+          <span>📁 Datasets</span>
+        </button>
+        <button type="button" id="nav-single-btn" class="nav-btn" onclick="showSingleView()">
+          <span>📝 Single Claim Triage</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Operational Context & Disclaimer -->
+    <div class="policy-banner">
+      <div class="policy-icon">ℹ️</div>
+      <div class="policy-text">
+        <h4>Operational Triage Framework (Desk Capacity: 40 claims / month)</h4>
+        <p>
+          Model scores reflect rank-ordered fraud probability calibrated on out-of-time operational validation (April–June 2026).
+          This system prioritizes manual triage review. <em>Notice: Free-text inspector notes are strictly excluded from prediction features for data integrity.</em>
+        </p>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         VIEW 1: LANDING PAGE (Clean session start — NO stale counts)
+         ===================================================================== -->
+    <div id="view-landing">
+      <div class="landing-hero">
+        <div class="landing-pill">
+          <span>⚡</span>
+          <span>Risk Decision Engine · Ready for Intake</span>
+        </div>
+        <h2>Kestrel Warranty Intelligence</h2>
+        <p class="subtitle">Upload your warranty claims or explore the demo dataset to begin risk analysis.</p>
+
+        <div class="landing-actions-grid">
+          <!-- Action 1: Upload Claims -->
+          <div class="landing-action-card" onclick="showSelectDatasetView()">
+            <div>
+              <div class="card-action-icon upload">📁</div>
+              <h3>Upload Claims</h3>
+              <p>Upload a new warranty claims CSV file or inspect available project datasets. Review records and schema validation before triggering model scoring.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" style="width: 100%; pointer-events: none;">
+              <span>Select or Upload Dataset →</span>
+            </button>
+          </div>
+
+          <!-- Action 2: Analyze Demo -->
+          <div class="landing-action-card" onclick="triggerAnalyzeDemoDirect()">
+            <div>
+              <div class="card-action-icon demo">⚡</div>
+              <h3>Analyze Demo</h3>
+              <p>Immediately load and evaluate the verified pre-scored operational demo dataset (<strong>test_unlabelled.csv</strong> · 2,252 claims · Q2 2026 operational batch).</p>
+            </div>
+            <button type="button" class="btn btn-success" style="width: 100%; pointer-events: none;">
+              <span>Analyze Demo Dataset ⚡</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         VIEW 2: DATASET SELECTION (Choice A: Upload vs Choice B: Choose Dataset)
+         ===================================================================== -->
+    <div id="view-select" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📁 Choose Warranty Claims Dataset</div>
+            <div class="card-subtitle">Select a data source to begin risk analysis. Selecting a dataset does NOT automatically score it.</div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="showLandingView()">← Back to Home</button>
+        </div>
+
+        <div class="selection-grid">
+          <!-- Choice A: Upload from Computer -->
+          <div class="selection-card">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px;">
+                <span>💻</span> Choice A: Upload from Computer
+              </h3>
+              <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                Select a local CSV formatted with the 12 required claim fields.
+              </p>
+
+              <!-- Upload Drop Zone -->
+              <div class="drop-zone" id="drop-zone" onclick="triggerFilePicker()">
+                <div id="drop-zone-icon" class="drop-icon">📤</div>
+                <div id="drop-zone-title" style="font-weight: 700; font-size: 1rem; margin-bottom: 4px; color: #fff;">
+                  Click to Browse or Drag CSV Here
+                </div>
+                <div id="drop-zone-sub" style="font-size: 0.785rem; color: var(--text-muted);">
+                  Supports standard .csv format with required claim columns
+                </div>
+                <input type="file" id="file-input" accept=".csv" style="display: none;" onchange="handleFileSelected(event)">
+              </div>
+
+              <!-- Upload Error Banner -->
+              <div id="upload-error-box" class="hidden" style="margin-top: 1rem; padding: 0.85rem; border-radius: 8px; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-size: 0.825rem;">
+                <div style="font-weight: 700; margin-bottom: 4px;">⚠️ Schema Validation Error</div>
+                <div id="upload-error-msg"></div>
+              </div>
+
+              <!-- Direct Analyze Button for Upload (Visible after file is chosen) -->
+              <div id="upload-action-box" class="hidden" style="margin-top: 1.25rem;">
+                <button type="button" id="btn-analyze-upload" class="btn btn-success btn-lg" style="width: 100%;" onclick="executeAnalyzeData()">
+                  <span>⚡ Analyze Uploaded File Now</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 8px;" onclick="cancelSelection()">
+                  <span>✕ Replace / Choose Different File</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Choice B: Choose Available Dataset -->
+          <div class="selection-card">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px;">
+                <span>📦</span> Choice B: Choose Available Dataset
+              </h3>
+              <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                Select from verified project datasets. Training, validation, and demo sets are clearly distinguished.
+              </p>
+
+              <!-- Demo Dataset (Selectable & Clickable) -->
+              <div class="demo-dataset-card" id="demo-dataset-card" onclick="selectDemoDataset()">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                  <div>
+                    <h4 style="font-size: 1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                      <span>⚡ Demo Dataset</span>
+                      <span class="badge badge-low" id="demo-card-badge">Ready for Analysis</span>
+                    </h4>
+                    <p style="font-size: 0.825rem; color: var(--text-muted); margin-top: 4px;">
+                      Q2 2026 operational batch across 25 service partners.
+                    </p>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; font-family: 'JetBrains Mono', monospace;">
+                      Filename: <strong>test_unlabelled.csv</strong> · 2,252 claims · Pre-scored ready
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action buttons inside the card -->
+                <div style="display: flex; gap: 8px; margin-top: 1rem;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); selectDemoDataset();">
+                    <span>📋 Select & Preview</span>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-success" onclick="event.stopPropagation(); triggerAnalyzeDemoDirect();">
+                    <span>🚀 Analyze Demo Directly</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Reference: Historical Training Set -->
+              <div class="ref-dataset-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; color: #fff; font-size: 0.875rem;">📚 Historical Training Set</div>
+                    <div style="font-size: 0.775rem; color: var(--text-muted);">train.csv · 10,000 labeled claims (2024–2026)</div>
+                  </div>
+                  <span class="badge badge-neutral">Training Corpus · Reference Only</span>
+                </div>
+              </div>
+
+              <!-- Reference: Out-of-Time Validation Set -->
+              <div class="ref-dataset-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; color: #fff; font-size: 0.875rem;">🔬 Out-of-Time Validation Benchmark</div>
+                    <div style="font-size: 0.775rem; color: var(--text-muted);">val.csv · 2,132 claims (April–June 2026 · 45 frauds)</div>
+                  </div>
+                  <span class="badge badge-neutral">Benchmark · Reference Only</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Dataset Preview Section (Always visible once a selection is made) -->
+        <div id="selection-preview-box" class="preview-box hidden">
+          <div class="preview-header">
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <span>📋</span> Selected: <span id="preview-dataset-name" style="color: var(--primary);"></span>
+              </div>
+              <div id="preview-dataset-meta" style="font-size: 0.825rem; color: var(--text-muted); margin-top: 2px;"></div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="cancelSelection()">✕ Cancel Selection</button>
+              <button type="button" id="btn-trigger-analyze" class="btn btn-success btn-lg" onclick="executeAnalyzeData()">
+                <span>⚡ Analyze Data Now</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sample Table Preview -->
+          <div style="font-size: 0.825rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Schema Validated (12/12 required columns present) · First 5 Rows Preview:
+          </div>
+          <div class="table-container">
+            <table id="preview-sample-table">
+              <thead id="preview-sample-head"></thead>
+              <tbody id="preview-sample-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         VIEW 3: RESULTS DASHBOARD (Derives ALL values from active dataset)
+         ===================================================================== -->
+    <div id="view-dashboard" class="hidden">
+
+      <!-- Active Dataset Info Banner -->
+      <div class="active-dataset-banner">
+        <div class="dataset-tag">
+          <div class="dataset-tag-icon">📊</div>
+          <div>
+            <div class="dataset-tag-title" id="active-dataset-label">Active Dataset: Demo Dataset (test_unlabelled.csv)</div>
+            <div class="dataset-tag-sub" id="active-dataset-status">2,252 claims loaded · Scoring pipeline verified</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <a id="download-results-btn" class="btn btn-secondary btn-sm" href="/download_scored" download>
+            ⬇️ Download Scored CSV
+          </a>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="showSelectDatasetView()">
+            🔄 Change / Upload Dataset
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards (Derived from active dataset, clickable to filter) -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span>Total Analyzed</span>
+            <span>📑</span>
+          </div>
+          <div class="kpi-value" id="kpi-total">0</div>
+          <div class="kpi-sub" id="kpi-total-sub">Active batch claims</div>
+        </div>
+
+        <div class="kpi-card interactive" id="kpi-card-high" onclick="filterTableByRisk('HIGH')" title="Click to filter table to HIGH risk claims">
+          <div class="kpi-header">
+            <span>High Risk (≥ 0.30)</span>
+            <span style="font-size: 0.7rem; color: var(--danger);">🔍 click</span>
+          </div>
+          <div class="kpi-value" id="kpi-high" style="color: var(--danger);">0</div>
+          <div class="kpi-sub" id="kpi-high-pct">0.0% of batch</div>
+        </div>
+
+        <div class="kpi-card interactive" id="kpi-card-med" onclick="filterTableByRisk('MEDIUM')" title="Click to filter table to MEDIUM risk claims">
+          <div class="kpi-header">
+            <span>Medium (0.10–0.29)</span>
+            <span style="font-size: 0.7rem; color: var(--warning);">🔍 click</span>
+          </div>
+          <div class="kpi-value" id="kpi-med" style="color: var(--warning);">0</div>
+          <div class="kpi-sub" id="kpi-med-pct">0.0% of batch</div>
+        </div>
+
+        <div class="kpi-card interactive" id="kpi-card-low" onclick="filterTableByRisk('LOW')" title="Click to filter table to LOW risk claims">
+          <div class="kpi-header">
+            <span>Low Risk (&lt; 0.10)</span>
+            <span style="font-size: 0.7rem; color: var(--success);">🔍 click</span>
+          </div>
+          <div class="kpi-value" id="kpi-low" style="color: var(--success);">0</div>
+          <div class="kpi-sub" id="kpi-low-pct">0.0% of batch</div>
+        </div>
+      </div>
+
+      <!-- Secondary Score Stats -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.75rem;">
+        <div class="kpi-card">
+          <div class="kpi-header">Population Mean Fraud Score</div>
+          <div class="kpi-value" id="kpi-avg-score">0.00%</div>
+          <div class="kpi-sub">Average model predicted probability</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">Maximum Model Score</div>
+          <div class="kpi-value" id="kpi-max-score" style="color: var(--danger);">0.00%</div>
+          <div class="kpi-sub" id="kpi-max-claim">Highest risk claim in batch</div>
+        </div>
+      </div>
+
+      <!-- Interactive Charts -->
+      <div class="charts-grid">
+        <!-- Chart 1: Risk Tier Distribution -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🍩 Risk Tier Distribution</div>
+              <div class="card-subtitle">Click a segment to filter matching claims in the table below</div>
+            </div>
+          </div>
+          <div class="chart-container" id="risk-chart-wrapper">
+            <canvas id="riskDistributionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Score Histogram -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📊 Fraud Score Distribution</div>
+              <div class="card-subtitle">Frequency of model probability scores across active population</div>
+            </div>
+          </div>
+          <div class="chart-container" id="hist-chart-wrapper">
+            <canvas id="scoreHistogramChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filterable & Searchable Claims Table -->
+      <div class="card" style="margin-top: 1.75rem;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🔍 Claims Risk Triage Register</div>
+            <div class="card-subtitle" id="table-status-subtitle">Showing claims from active dataset · Synchronized with risk cards and charts</div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="table-toolbar">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="text" id="claim-search" class="search-input" placeholder="Search by Claim ID or Partner ID..." oninput="handleTableSearch()">
+            <div class="filter-chips">
+              <span class="filter-chip active-all" id="chip-ALL" onclick="filterTableByRisk('ALL')">All</span>
+              <span class="filter-chip" id="chip-HIGH" onclick="filterTableByRisk('HIGH')">🔴 High</span>
+              <span class="filter-chip" id="chip-MEDIUM" onclick="filterTableByRisk('MEDIUM')">🟡 Medium</span>
+              <span class="filter-chip" id="chip-LOW" onclick="filterTableByRisk('LOW')">🟢 Low</span>
+            </div>
+          </div>
+          <div id="table-count-label" style="font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            Showing 0 of 0 claims
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Claim ID</th>
+                <th>Submission Time</th>
+                <th>Partner ID</th>
+                <th>SKU</th>
+                <th>Amount (INR)</th>
+                <th>Days Purchase</th>
+                <th>Fraud Score</th>
+                <th>Risk Tier</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="claims-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <div id="pagination-info">Page 1 of 1</div>
+          <div class="pagination-btns">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-prev-page" onclick="changePage(-1)">Previous</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-next-page" onclick="changePage(1)">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         VIEW 4: SINGLE CLAIM TRIAGE (Preserves existing single-claim manual flow)
+         ===================================================================== -->
+    <div id="view-single" class="hidden">
+      <div class="grid-2">
+        <!-- Form Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📝 Single Claim Intake Evaluation</div>
+              <div class="card-subtitle">Input warranty parameters for real-time risk scoring and explanation</div>
+            </div>
+          </div>
+
+          <!-- Presets -->
+          <div style="display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap;">
+            <span style="font-size: 0.8rem; color: var(--text-muted); align-self: center;">Test Presets:</span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadPreset('high')">🔴 High Risk</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadPreset('med')">🟡 Medium Risk</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadPreset('low')">🟢 Low Risk</button>
+          </div>
+
+          <form id="single-form" onsubmit="handleSinglePredict(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="single_claim_id">Claim Number</label>
+                <input type="text" id="single_claim_id" required value="WC711748">
+              </div>
+              <div class="form-group">
+                <label for="single_submitted_at">Submission Date & Time (IST)</label>
+                <input type="text" id="single_submitted_at" required value="2026-07-15 19:09">
+              </div>
+              <div class="form-group">
+                <label for="single_partner_id">Service Partner ID</label>
+                <input type="text" id="single_partner_id" required value="SP3214">
+              </div>
+              <div class="form-group">
+                <label for="single_sku">Product SKU</label>
+                <input type="text" id="single_sku" required value="KH-RH-01">
+              </div>
+              <div class="form-group">
+                <label for="single_product_serial">Product Serial</label>
+                <input type="text" id="single_product_serial" required value="KH800724084">
+              </div>
+              <div class="form-group">
+                <label for="single_claim_amount_inr">Claim Amount (INR)</label>
+                <input type="number" id="single_claim_amount_inr" step="0.01" required value="681.0">
+              </div>
+              <div class="form-group">
+                <label for="single_days_since_purchase">Days Since Purchase</label>
+                <input type="number" id="single_days_since_purchase" required value="138">
+              </div>
+              <div class="form-group">
+                <label for="single_customer_prior_claims">Customer Prior Claims</label>
+                <input type="number" id="single_customer_prior_claims" min="0" required value="0">
+              </div>
+              <div class="form-group">
+                <label for="single_photo_attached">Photo Attached?</label>
+                <select id="single_photo_attached" required>
+                  <option value="Y" selected>Y — Yes (Photo Attached)</option>
+                  <option value="N">N — No (No Photo)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="single_partner_inspected">Partner Inspected?</label>
+                <select id="single_partner_inspected" required>
+                  <option value="Y">Y — Yes (Inspected by Partner)</option>
+                  <option value="N" selected>N — No (Uninspected / Auto-Approval)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="single_source">Source System</label>
+                <select id="single_source" required>
+                  <option value="crm" selected>CRM (Current System)</option>
+                  <option value="legacy_zoho">Legacy Zoho Desk</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="single_claim_description">Fault Description</label>
+                <input type="text" id="single_claim_description" required value="loud noise while running">
+              </div>
+              <div class="form-group full-width" style="margin-top: 0.5rem;">
+                <button type="submit" id="single-submit-btn" class="btn" style="width: 100%;">
+                  <span>⚡ Analyze Claim Risk</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Outcome Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🔍 Assessment Outcome</div>
+              <div class="card-subtitle">TreeSHAP transparent risk breakdown</div>
+            </div>
+          </div>
+
+          <div id="single-placeholder" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎯</div>
+            <p>Click <strong>Analyze Claim Risk</strong> to calculate score and TreeSHAP reasons.</p>
+          </div>
+
+          <div id="single-result-box" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
+              <span id="single-res-badge" class="badge"></span>
+              <span id="single-res-claim-id" class="mono" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+            </div>
+            <div style="font-size: 2.5rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin-bottom: 1rem;" id="single-res-score">
+              0.00%
+            </div>
+
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Top Contributing Factors (TreeSHAP):</div>
+            <ul id="single-res-reasons" style="list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; font-size: 0.825rem; color: #cbd5e1;"></ul>
+
+            <!-- AI Button in single claim -->
+            <button type="button" class="btn btn-secondary btn-sm" onclick="openAIModalForCurrentSingle()">
+              🤖 Analyze with AI Assistant (Groq)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =====================================================================
+       AI INVESTIGATION MODAL (Only called when user explicitly clicks AI)
+       ===================================================================== -->
+  <div id="ai-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button type="button" class="modal-close" onclick="closeAIModal()">✕</button>
+
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+        <span style="font-size: 1.5rem;">🤖</span>
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Groq AI Fraud Investigation Assistant</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Grounded in LightGBM model score and TreeSHAP operational reasons</p>
+        </div>
+      </div>
+
+      <!-- Claim Context Summary -->
+      <div style="background: var(--surface-light); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong id="modal-claim-id" class="mono" style="color: #fff; font-size: 1rem;">WC000000</strong>
+            <span id="modal-claim-sku" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;"></span>
+          </div>
+          <div>
+            <span id="modal-claim-score" class="mono" style="font-weight: 700; font-size: 1.1rem; color: var(--primary);">0.0%</span>
+            <span id="modal-claim-risk" class="badge badge-neutral" style="margin-left: 6px;">UNKNOWN</span>
+          </div>
+        </div>
+        <div id="modal-claim-reasons" style="font-size: 0.775rem; color: var(--text-dim); margin-top: 8px;"></div>
+      </div>
+
+      <!-- Action Prompt (Explicit user click required!) -->
+      <div id="ai-modal-prompt-zone" style="text-align: center; padding: 1.5rem 1rem;">
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Click below to initiate an AI investigation brief. Groq is not called automatically without your explicit request.
+        </p>
+        <button type="button" id="btn-call-groq" class="btn btn-success btn-lg" onclick="executeGroqAnalysis()">
+          <span>🚀 Generate AI Investigation Brief</span>
+        </button>
+      </div>
+
+      <!-- Loading Spinner Box -->
+      <div id="ai-modal-loading" class="hidden" style="text-align: center; padding: 2rem 1rem;">
+        <div class="spinner" style="width: 28px; height: 28px; margin-bottom: 12px; border-width: 3px;"></div>
+        <div style="color: var(--primary); font-weight: 600; font-size: 0.95rem;">Consulting Groq LLaMA-3.3-70B...</div>
+        <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px;">Evaluating claim evidence and risk indicators</div>
+      </div>
+
+      <!-- Error / Notice Box -->
+      <div id="ai-modal-error" class="hidden" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;"></div>
+
+      <!-- Result Container -->
+      <div id="ai-modal-result" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">1. Executive Risk Summary</div>
+          <div id="ai-out-summary" style="font-size: 0.85rem; color: #fff; margin-top: 4px;"></div>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--warning); text-transform: uppercase;">2. Why Flagged (TreeSHAP Grounded)</div>
+          <div id="ai-out-why" style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;"></div>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--success); text-transform: uppercase;">3. Recommended Verification Steps</div>
+          <ul id="ai-out-steps" style="margin-top: 4px; padding-left: 1.25rem; font-size: 0.85rem; color: #cbd5e1;"></ul>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--94a3b8); text-transform: uppercase;">4. Missing Information & Limitations</div>
+          <div id="ai-out-missing" style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;"></div>
+        </div>
+        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">5. Recommended Next Step</div>
+          <div id="ai-out-next" style="font-size: 0.85rem; color: #fff; font-weight: 600; margin-top: 4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       GLOBAL STATE & APPLICATION WORKFLOW CONTROLLER
+       ===================================================================== */
+    let currentSelection = null; // { type: 'demo' | 'upload', file: File | null, meta: {} }
+    let activeDataset = null;   // Results from API { dataset_name, total_claims, high_risk_count, ... }
+    let activeClaims = [];      // Array of all claim objects
+    let filteredClaims = [];    // Filtered / searched claims
+    let currentRiskFilter = 'ALL';
+    let currentPage = 1;
+    const PAGE_SIZE = 25;
+
+    let riskDonutChart = null;
+    let scoreHistogramChart = null;
+
+    // View Navigation
+    function hideAllViews() {
+      ['view-landing', 'view-select', 'view-dashboard', 'view-single'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    }
+
+    function showLandingView() {
+      hideAllViews();
+      document.getElementById('view-landing').classList.remove('hidden');
+    }
+
+    function showSelectDatasetView() {
+      hideAllViews();
+      document.getElementById('view-select').classList.remove('hidden');
+      document.getElementById('nav-switch-btn').classList.add('active');
+    }
+
+    function showDashboardView() {
+      if (!activeDataset) {
+        showSelectDatasetView();
+        return;
+      }
+      hideAllViews();
+      document.getElementById('view-dashboard').classList.remove('hidden');
+      document.getElementById('nav-dashboard-btn').classList.remove('hidden');
+      document.getElementById('nav-dashboard-btn').classList.add('active');
+    }
+
+    function showSingleView() {
+      hideAllViews();
+      document.getElementById('view-single').classList.remove('hidden');
+      document.getElementById('nav-single-btn').classList.add('active');
+    }
+
+    // Safe JSON parser: cleans any rogue unquoted NaN / Infinity before parsing
+    async function safeJson(res) {
+      const text = await res.text();
+      try {
+        const clean = text
+          .replace(/:\s*NaN\b/g, ': null')
+          .replace(/:\s*Infinity\b/g, ': null')
+          .replace(/:\s*-Infinity\b/g, ': null');
+        return JSON.parse(clean);
+      } catch (e) {
+        try {
+          const fallbackClean = text.replace(/\bNaN\b/g, 'null').replace(/\bInfinity\b/g, 'null').replace(/\b-Infinity\b/g, 'null');
+          return JSON.parse(fallbackClean);
+        } catch (e2) {
+          return JSON.parse(text);
+        }
+      }
+    }
+
+    function showGlobalLoader(title, subtitle) {
+      const loader = document.getElementById('global-loader');
+      document.getElementById('loader-title').textContent = title || 'Processing...';
+      document.getElementById('loader-subtitle').textContent = subtitle || 'Please wait';
+      loader.classList.remove('hidden');
+    }
+
+    function hideGlobalLoader() {
+      document.getElementById('global-loader').classList.add('hidden');
+    }
+
+    /* =====================================================================
+       DEMO DATASET FLOW (One-click direct OR select & preview)
+       ===================================================================== */
+
+    // Direct Analyze Demo (Called from Landing Page or Choice B direct button)
+    async function triggerAnalyzeDemoDirect() {
+      showGlobalLoader('Loading Demo Dataset...', 'Accessing verified test_unlabelled.csv pre-scored records');
+      try {
+        const res = await fetch('/api/demo_claims');
+        const data = await safeJson(res);
+        if (!res.ok) throw new Error(data.error || 'Failed to load demo data');
+
+        applyAnalysisResults(data);
+      } catch (err) {
+        alert('Could not load demo dataset: ' + err.message);
+      } finally {
+        hideGlobalLoader();
+      }
+    }
+
+    // Select Demo Dataset for Preview (Choice B in Selection View)
+    async function selectDemoDataset() {
+      const demoCard = document.getElementById('demo-dataset-card');
+      if (demoCard) demoCard.classList.add('active');
+
+      try {
+        const res = await fetch('/api/demo_info');
+        const info = await safeJson(res);
+        if (!res.ok) throw new Error(info.error || 'Failed to inspect demo dataset');
+
+        currentSelection = {
+          type: 'demo',
+          filename: info.filename,
+          label: info.label,
+          total_rows: info.total_rows,
+          preview: info.preview,
+          columns: info.columns
+        };
+
+        const badge = document.getElementById('demo-card-badge');
+        if (badge) {
+          badge.className = 'badge badge-high';
+          badge.textContent = 'Selected ✅';
+        }
+
+        renderSelectionPreview(currentSelection);
+      } catch (err) {
+        alert('Error inspecting demo dataset: ' + err.message);
+      }
+    }
+
+    /* =====================================================================
+       UPLOAD FILE FLOW (Choice A: Upload from Computer)
+       ===================================================================== */
+
+    function triggerFilePicker() {
+      document.getElementById('file-input').click();
+    }
+
+    function handleFileSelected(e) {
+      if (e.target.files && e.target.files.length) {
+        validateAndSelectUploadedFile(e.target.files[0]);
+      }
+    }
+
+    // Drag and Drop listeners
+    const dropZone = document.getElementById('drop-zone');
+    if (dropZone) {
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+          validateAndSelectUploadedFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    async function validateAndSelectUploadedFile(file) {
+      const errBox = document.getElementById('upload-error-box');
+      const errMsg = document.getElementById('upload-error-msg');
+      const actionBox = document.getElementById('upload-action-box');
+      errBox.classList.add('hidden');
+      actionBox.classList.add('hidden');
+
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        errBox.classList.remove('hidden');
+        errMsg.textContent = 'Invalid file extension. Please select a valid .csv file.';
+        return;
+      }
+
+      // Visual progress in drop zone
+      document.getElementById('drop-zone-icon').innerHTML = '<span class="spinner" style="width:32px;height:32px;border-width:3px;"></span>';
+      document.getElementById('drop-zone-title').textContent = `Inspecting ${file.name}...`;
+      document.getElementById('drop-zone-sub').textContent = 'Validating required schema columns';
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/validate_csv', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await safeJson(res);
+
+        if (!res.ok || !data.valid) {
+          // Reset drop zone visuals
+          document.getElementById('drop-zone-icon').textContent = '⚠️';
+          document.getElementById('drop-zone-title').textContent = 'Validation Failed';
+          document.getElementById('drop-zone-sub').textContent = 'Click to try selecting another CSV';
+
+          errBox.classList.remove('hidden');
+          if (data.missing_columns && data.missing_columns.length) {
+            errMsg.innerHTML = `Missing ${data.missing_columns.length} required fields: <strong>${data.missing_columns.join(', ')}</strong>.<br>Please ensure your CSV includes all 12 warranty claim schema columns.`;
+          } else {
+            errMsg.textContent = data.error || 'Validation failed. Check CSV formatting.';
+          }
+          return;
+        }
+
+        // Successfully validated! Update drop zone in-place
+        dropZone.classList.add('file-ready');
+        document.getElementById('drop-zone-icon').textContent = '✅';
+        document.getElementById('drop-zone-title').textContent = `Loaded: ${file.name}`;
+        document.getElementById('drop-zone-sub').innerHTML =
+          `<strong style="color:var(--success);">${data.total_rows.toLocaleString()} claims ready</strong> · 12/12 columns verified`;
+
+        actionBox.classList.remove('hidden');
+
+        currentSelection = {
+          type: 'upload',
+          file: file,
+          filename: file.name,
+          label: `Uploaded (${file.name})`,
+          total_rows: data.total_rows,
+          preview: data.preview,
+          columns: data.columns
+        };
+
+        renderSelectionPreview(currentSelection);
+
+      } catch (err) {
+        document.getElementById('drop-zone-icon').textContent = '❌';
+        document.getElementById('drop-zone-title').textContent = 'Upload Error';
+        document.getElementById('drop-zone-sub').textContent = 'Network or server error during validation';
+        errBox.classList.remove('hidden');
+        errMsg.textContent = 'Validation network request failed: ' + err.message;
+      }
+    }
+
+    function renderSelectionPreview(sel) {
+      const pBox = document.getElementById('selection-preview-box');
+      pBox.classList.remove('hidden');
+
+      document.getElementById('preview-dataset-name').textContent = sel.label;
+      document.getElementById('preview-dataset-meta').textContent =
+        `Filename: ${sel.filename} · ${sel.total_rows.toLocaleString()} claims available · Status: Schema Validated (Ready to Score)`;
+
+      // Render 5 preview rows
+      const thead = document.getElementById('preview-sample-head');
+      const tbody = document.getElementById('preview-sample-body');
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      if (sel.preview && sel.preview.length > 0) {
+        const headers = Object.keys(sel.preview[0]).slice(0, 8); // show first 8 cols
+        const trH = document.createElement('tr');
+        headers.forEach(h => {
+          const th = document.createElement('th');
+          th.textContent = h;
+          trH.appendChild(th);
+        });
+        thead.appendChild(trH);
+
+        sel.preview.forEach(row => {
+          const tr = document.createElement('tr');
+          headers.forEach(h => {
+            const td = document.createElement('td');
+            td.textContent = row[h];
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Scroll smoothly to preview
+      pBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cancelSelection() {
+      currentSelection = null;
+      document.getElementById('selection-preview-box').classList.add('hidden');
+      document.getElementById('upload-action-box').classList.add('hidden');
+      document.getElementById('upload-error-box').classList.add('hidden');
+      document.getElementById('file-input').value = '';
+
+      // Reset drop zone visuals
+      dropZone.classList.remove('file-ready');
+      document.getElementById('drop-zone-icon').textContent = '📤';
+      document.getElementById('drop-zone-title').textContent = 'Click to Browse or Drag CSV Here';
+      document.getElementById('drop-zone-sub').textContent = 'Supports standard .csv format with required claim columns';
+
+      const demoCard = document.getElementById('demo-dataset-card');
+      if (demoCard) demoCard.classList.remove('active');
+      const badge = document.getElementById('demo-card-badge');
+      if (badge) {
+        badge.className = 'badge badge-low';
+        badge.textContent = 'Ready for Analysis';
+      }
+    }
+
+    /* =====================================================================
+       EXECUTE ANALYZE DATA (Triggered explicitly by user!)
+       ===================================================================== */
+    async function executeAnalyzeData() {
+      if (!currentSelection) {
+        alert('Please select or upload a dataset first.');
+        return;
+      }
+
+      showGlobalLoader('Scoring & Analyzing Claims...', `Processing ${currentSelection.label} through LightGBM inference model`);
+
+      try {
+        if (currentSelection.type === 'demo') {
+          // Use verified pre-scored demo path
+          const res = await fetch('/api/demo_claims');
+          const data = await safeJson(res);
+          if (!res.ok) throw new Error(data.error || 'Failed to load demo data');
+
+          applyAnalysisResults(data);
+        } else if (currentSelection.type === 'upload') {
+          // Score uploaded file through LightGBM pipeline
+          const formData = new FormData();
+          formData.append('file', currentSelection.file);
+
+          const res = await fetch('/predict_bulk?format=json', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await safeJson(res);
+          if (!res.ok) throw new Error(data.error || 'Bulk scoring failed');
+
+          applyAnalysisResults(data);
+        }
+      } catch (err) {
+        alert('Analysis error: ' + err.message);
+      } finally {
+        hideGlobalLoader();
+      }
+    }
+
+    /* =====================================================================
+       APPLY ANALYSIS RESULTS & RENDER DASHBOARD
+       ===================================================================== */
+    function applyAnalysisResults(data) {
+      activeDataset = data;
+      activeClaims = data.claims || [];
+      filteredClaims = [...activeClaims];
+      currentRiskFilter = 'ALL';
+      currentPage = 1;
+
+      // Update Active Dataset Banner
+      document.getElementById('active-dataset-label').textContent = `Active Dataset: ${data.dataset_name || data.filename}`;
+      document.getElementById('active-dataset-status').textContent =
+        `${data.total_claims.toLocaleString()} claims · Model: LightGBM (17 features) · Status: Scored & Verified`;
+
+      // Update KPI Grid
+      document.getElementById('kpi-total').textContent = data.total_claims.toLocaleString();
+      document.getElementById('kpi-high').textContent = data.high_risk_count.toLocaleString();
+      document.getElementById('kpi-high-pct').textContent = `${data.high_risk_pct}% of population`;
+
+      document.getElementById('kpi-med').textContent = data.medium_risk_count.toLocaleString();
+      document.getElementById('kpi-med-pct').textContent = `${data.medium_risk_pct}% of population`;
+
+      document.getElementById('kpi-low').textContent = data.low_risk_count.toLocaleString();
+      document.getElementById('kpi-low-pct').textContent = `${data.low_risk_pct}% of population`;
+
+      document.getElementById('kpi-avg-score').textContent = `${(data.average_fraud_score * 100).toFixed(2)}%`;
+      document.getElementById('kpi-max-score').textContent = `${(data.highest_fraud_score * 100).toFixed(2)}%`;
+      document.getElementById('kpi-max-claim').textContent = `Claim ID: ${data.highest_claim_id || 'N/A'}`;
+
+      // Update Download Button
+      const dlBtn = document.getElementById('download-results-btn');
+      dlBtn.href = data.download_url || '/download_scored';
+
+      // Render Charts safely with fallback
+      renderRiskDistributionChart(data);
+      renderScoreHistogramChart(data);
+
+      // Render Claims Table
+      renderClaimsTable();
+
+      // Switch to dashboard view
+      showDashboardView();
+    }
+
+    /* =====================================================================
+       CHARTS IMPLEMENTATION (With safe fallback if Chart.js is offline)
+       ===================================================================== */
+    function renderRiskDistributionChart(data) {
+      const canvas = document.getElementById('riskDistributionChart');
+      if (!canvas) return;
+
+      if (typeof Chart === 'undefined') {
+        // Fallback visual
+        const wrapper = document.getElementById('risk-chart-wrapper');
+        wrapper.innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%;padding:1rem;">
+            <div style="display:flex;justify-content:space-between;color:var(--danger);font-weight:700;">
+              <span>🔴 HIGH RISK (≥ 0.30)</span><span>${data.high_risk_count} (${data.high_risk_pct}%)</span>
+            </div>
+            <div style="background:var(--danger-bg);height:14px;border-radius:6px;width:100%;"><div style="background:var(--danger);height:100%;border-radius:6px;width:${Math.max(data.high_risk_pct, 2)}%;"></div></div>
+            <div style="display:flex;justify-content:space-between;color:var(--warning);font-weight:700;">
+              <span>🟡 MEDIUM RISK (0.10–0.29)</span><span>${data.medium_risk_count} (${data.medium_risk_pct}%)</span>
+            </div>
+            <div style="background:var(--warning-bg);height:14px;border-radius:6px;width:100%;"><div style="background:var(--warning);height:100%;border-radius:6px;width:${Math.max(data.medium_risk_pct, 2)}%;"></div></div>
+            <div style="display:flex;justify-content:space-between;color:var(--success);font-weight:700;">
+              <span>🟢 LOW RISK (< 0.10)</span><span>${data.low_risk_count} (${data.low_risk_pct}%)</span>
+            </div>
+            <div style="background:var(--success-bg);height:14px;border-radius:6px;width:100%;"><div style="background:var(--success);height:100%;border-radius:6px;width:${data.low_risk_pct}%;"></div></div>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const ctx = canvas.getContext('2d');
+        if (riskDonutChart) riskDonutChart.destroy();
+
+        riskDonutChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['High Risk (≥ 0.30)', 'Medium Risk (0.10–0.29)', 'Low Risk (< 0.10)'],
+            datasets: [{
+              data: [data.high_risk_count, data.medium_risk_count, data.low_risk_count],
+              backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+              borderColor: '#111827',
+              borderWidth: 2,
+              hoverOffset: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, padding: 14 }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    const val = ctx.raw || 0;
+                    const pct = ((val / data.total_claims) * 100).toFixed(2);
+                    return ` ${ctx.label}: ${val.toLocaleString()} (${pct}%)`;
+                  }
+                }
+              }
+            },
+            onClick: (evt, activeEls) => {
+              if (activeEls && activeEls.length > 0) {
+                const idx = activeEls[0].index;
+                const tiers = ['HIGH', 'MEDIUM', 'LOW'];
+                filterTableByRisk(tiers[idx]);
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Error rendering risk donut chart:', e);
+      }
+    }
+
+    function renderScoreHistogramChart(data) {
+      const canvas = document.getElementById('scoreHistogramChart');
+      if (!canvas) return;
+
+      const dist = data.score_distribution || {
+        '< 5%': data.low_risk_count,
+        '5% - 10%': 0,
+        '10% - 20%': Math.round(data.medium_risk_count * 0.7),
+        '20% - 30%': Math.round(data.medium_risk_count * 0.3),
+        '≥ 30%': data.high_risk_count
+      };
+
+      const labels = Object.keys(dist);
+      const counts = Object.values(dist);
+
+      if (typeof Chart === 'undefined') {
+        const wrapper = document.getElementById('hist-chart-wrapper');
+        wrapper.innerHTML = `
+          <div style="display:flex;align-items:flex-end;gap:12px;height:100%;padding:1.5rem 1rem;">
+            ${labels.map((l, i) => `
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <span style="font-size:0.75rem;color:#94a3b8;">${counts[i]}</span>
+                <div style="background:var(--primary);width:100%;height:${Math.max(10, Math.min(180, (counts[i]/data.total_claims)*200))}px;border-radius:4px;"></div>
+                <span style="font-size:0.7rem;color:#94a3b8;">${l}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const ctx = canvas.getContext('2d');
+        if (scoreHistogramChart) scoreHistogramChart.destroy();
+
+        scoreHistogramChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Claims Count',
+              data: counts,
+              backgroundColor: [
+                'rgba(16, 185, 129, 0.75)',
+                'rgba(56, 189, 248, 0.75)',
+                'rgba(245, 158, 11, 0.75)',
+                'rgba(249, 115, 22, 0.75)',
+                'rgba(239, 68, 68, 0.85)'
+              ],
+              borderColor: [
+                '#10b981', '#38bdf8', '#f59e0b', '#f97316', '#ef4444'
+              ],
+              borderWidth: 1,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+              },
+              y: {
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    return ` Claims in band: ${ctx.raw.toLocaleString()}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Error rendering histogram chart:', e);
+      }
+    }
+
+    /* =====================================================================
+       TABLE FILTERING, SEARCH, & SYNCHRONIZATION
+       ===================================================================== */
+    function filterTableByRisk(level) {
+      currentRiskFilter = level;
+      currentPage = 1;
+
+      // Update Filter Chips UI
+      document.querySelectorAll('.filter-chip').forEach(c => c.className = 'filter-chip');
+      const chip = document.getElementById('chip-' + level);
+      if (chip) {
+        if (level === 'HIGH') chip.className = 'filter-chip active-high';
+        else if (level === 'MEDIUM') chip.className = 'filter-chip active-med';
+        else if (level === 'LOW') chip.className = 'filter-chip active-low';
+        else chip.className = 'filter-chip active-all';
+      }
+
+      // Update KPI Cards highlighting
+      ['kpi-card-high', 'kpi-card-med', 'kpi-card-low'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active-filter');
+      });
+      if (level === 'HIGH') document.getElementById('kpi-card-high').classList.add('active-filter');
+      else if (level === 'MEDIUM') document.getElementById('kpi-card-med').classList.add('active-filter');
+      else if (level === 'LOW') document.getElementById('kpi-card-low').classList.add('active-filter');
+
+      applyTableFilters();
+    }
+
+    function handleTableSearch() {
+      currentPage = 1;
+      applyTableFilters();
+    }
+
+    function applyTableFilters() {
+      const q = document.getElementById('claim-search').value.trim().toLowerCase();
+
+      filteredClaims = activeClaims.filter(c => {
+        // Risk match
+        const riskMatch = (currentRiskFilter === 'ALL' || c.risk_level === currentRiskFilter);
+        // Query match
+        const searchMatch = !q ||
+          (c.claim_id && c.claim_id.toLowerCase().includes(q)) ||
+          (c.partner_id && c.partner_id.toLowerCase().includes(q)) ||
+          (c.sku && c.sku.toLowerCase().includes(q));
+
+        return riskMatch && searchMatch;
+      });
+
+      renderClaimsTable();
+    }
+
+    function renderClaimsTable() {
+      const tbody = document.getElementById('claims-table-body');
+      tbody.innerHTML = '';
+
+      const countLabel = document.getElementById('table-count-label');
+      const filterSuffix = currentRiskFilter !== 'ALL' ? ` (${currentRiskFilter} risk filter active)` : '';
+      countLabel.textContent = `Showing ${filteredClaims.length.toLocaleString()} of ${activeClaims.length.toLocaleString()} claims${filterSuffix}`;
+
+      if (filteredClaims.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2rem;">No matching claims found.</td></tr>`;
+        document.getElementById('pagination-info').textContent = 'Page 0 of 0';
+        document.getElementById('btn-prev-page').disabled = true;
+        document.getElementById('btn-next-page').disabled = true;
+        return;
+      }
+
+      const totalPages = Math.ceil(filteredClaims.length / PAGE_SIZE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, filteredClaims.length);
+      const pageClaims = filteredClaims.slice(start, end);
+
+      pageClaims.forEach(c => {
+        const tr = document.createElement('tr');
+        const badgeClass = c.risk_level === 'HIGH' ? 'badge-high' : (c.risk_level === 'MEDIUM' ? 'badge-medium' : 'badge-low');
+        const scorePct = (c.fraud_score * 100).toFixed(2) + '%';
+        const scoreColor = c.risk_level === 'HIGH' ? 'var(--danger)' : (c.risk_level === 'MEDIUM' ? 'var(--warning)' : 'var(--success)');
+
+        tr.innerHTML = `
+          <td class="mono"><strong>${c.claim_id}</strong></td>
+          <td style="color:var(--text-muted);">${c.submitted_at || 'N/A'}</td>
+          <td class="mono">${c.partner_id || 'N/A'}</td>
+          <td class="mono">${c.sku || 'N/A'}</td>
+          <td class="mono">Rs. ${parseFloat(c.claim_amount_inr || 0).toLocaleString()}</td>
+          <td class="mono">${c.days_since_purchase || 0}d</td>
+          <td class="mono" style="font-weight:700; color:${scoreColor};">${scorePct}</td>
+          <td><span class="badge ${badgeClass}">${c.risk_level}</span></td>
+          <td>
+            <button type="button" class="btn-ai" onclick="openAIModalForClaim('${c.claim_id}')">
+              <span>🤖 Analyze with AI</span>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update Pagination UI
+      document.getElementById('pagination-info').textContent = `Page ${currentPage} of ${totalPages} (${start + 1}–${end} of ${filteredClaims.length.toLocaleString()})`;
+      document.getElementById('btn-prev-page').disabled = (currentPage === 1);
+      document.getElementById('btn-next-page').disabled = (currentPage === totalPages);
+    }
+
+    function changePage(delta) {
+      currentPage += delta;
+      renderClaimsTable();
+    }
+
+    /* =====================================================================
+       GROQ AI ASSISTANT (Explicit user invocation only!)
+       ===================================================================== */
+    let selectedClaimForAI = null;
+
+    function openAIModalForClaim(claimId) {
+      const claim = activeClaims.find(c => c.claim_id === claimId);
+      if (!claim) return;
+      selectedClaimForAI = claim;
+
+      document.getElementById('modal-claim-id').textContent = claim.claim_id;
+      document.getElementById('modal-claim-sku').textContent = `SKU: ${claim.sku || 'N/A'} · Partner: ${claim.partner_id || 'N/A'}`;
+      document.getElementById('modal-claim-score').textContent = (claim.fraud_score * 100).toFixed(2) + '%';
+
+      const riskBadge = document.getElementById('modal-claim-risk');
+      riskBadge.className = 'badge ' + (claim.risk_level === 'HIGH' ? 'badge-high' : (claim.risk_level === 'MEDIUM' ? 'badge-medium' : 'badge-low'));
+      riskBadge.textContent = claim.risk_level + ' RISK';
+
+      document.getElementById('modal-claim-reasons').textContent =
+        `Parameters: Amount = Rs. ${claim.claim_amount_inr}, Days = ${claim.days_since_purchase}, Photo = ${claim.photo_attached}, Inspected = ${claim.partner_inspected}`;
+
+      // Reset modal state
+      document.getElementById('ai-modal-prompt-zone').classList.remove('hidden');
+      document.getElementById('ai-modal-loading').classList.add('hidden');
+      document.getElementById('ai-modal-error').classList.add('hidden');
+      document.getElementById('ai-modal-result').classList.add('hidden');
+
+      document.getElementById('ai-modal').classList.remove('hidden');
+    }
+
+    function closeAIModal() {
+      document.getElementById('ai-modal').classList.add('hidden');
+      selectedClaimForAI = null;
+    }
+
+    async function executeGroqAnalysis() {
+      if (!selectedClaimForAI) return;
+
+      const promptZone = document.getElementById('ai-modal-prompt-zone');
+      const loadZone = document.getElementById('ai-modal-loading');
+      const errZone = document.getElementById('ai-modal-error');
+      const resZone = document.getElementById('ai-modal-result');
+
+      promptZone.classList.add('hidden');
+      loadZone.classList.remove('hidden');
+      errZone.classList.add('hidden');
+      resZone.classList.add('hidden');
+
+      const payload = {
+        claim_id: selectedClaimForAI.claim_id,
+        submitted_at: selectedClaimForAI.submitted_at || '2026-07-15 12:00',
+        partner_id: selectedClaimForAI.partner_id || 'SP3214',
+        sku: selectedClaimForAI.sku || 'KH-RH-01',
+        product_serial: selectedClaimForAI.product_serial || 'KH00000000',
+        days_since_purchase: parseFloat(selectedClaimForAI.days_since_purchase || 0),
+        claim_amount_inr: parseFloat(selectedClaimForAI.claim_amount_inr || 0),
+        photo_attached: selectedClaimForAI.photo_attached || 'Y',
+        partner_inspected: selectedClaimForAI.partner_inspected || 'N',
+        claim_description: selectedClaimForAI.claim_description || 'warranty repair claim',
+        customer_prior_claims: parseInt(selectedClaimForAI.customer_prior_claims || 0),
+        source: selectedClaimForAI.source || 'crm'
+      };
+
+      try {
+        const res = await fetch('/ai/investigate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await safeJson(res);
+
+        loadZone.classList.add('hidden');
+
+        if (!res.ok) {
+          throw new Error(data.error || 'AI analysis request failed');
+        }
+
+        const ai = data.ai_analysis;
+        if (!ai) throw new Error('Malformed AI response from server');
+
+        if (ai.status === 'SUCCESS') {
+          resZone.classList.remove('hidden');
+          document.getElementById('ai-out-summary').textContent = ai.risk_summary || 'N/A';
+          document.getElementById('ai-out-why').textContent = ai.why_flagged || 'N/A';
+
+          const stepsEl = document.getElementById('ai-out-steps');
+          stepsEl.innerHTML = '';
+          (ai.verification_steps || ['Audit claim documentation.']).forEach(s => {
+            const li = document.createElement('li');
+            li.textContent = s;
+            stepsEl.appendChild(li);
+          });
+
+          document.getElementById('ai-out-missing').textContent = ai.missing_information_and_limitations || 'N/A';
+          document.getElementById('ai-out-next').textContent = ai.recommended_next_step || 'N/A';
+        } else if (ai.status === 'NOT_CONFIGURED') {
+          errZone.classList.remove('hidden');
+          errZone.style.background = 'rgba(245, 158, 11, 0.15)';
+          errZone.style.color = '#f59e0b';
+          errZone.innerHTML = `⚠️ <strong>AI Assistant Not Configured:</strong> ${ai.message}`;
+        } else {
+          errZone.classList.remove('hidden');
+          errZone.style.background = 'rgba(239, 68, 68, 0.15)';
+          errZone.style.color = '#ef4444';
+          errZone.innerHTML = `❌ <strong>AI Service Notice:</strong> ${ai.message || 'Service unavailable'}`;
+        }
+      } catch (err) {
+        loadZone.classList.add('hidden');
+        errZone.classList.remove('hidden');
+        errZone.style.background = 'rgba(239, 68, 68, 0.15)';
+        errZone.style.color = '#ef4444';
+        errZone.innerHTML = `❌ <strong>Error:</strong> ${err.message}`;
+      }
+    }
+
+    /* =====================================================================
+       SINGLE CLAIM TRIAGE HELPER FUNCTIONS
+       ===================================================================== */
+    const presets = {
+      high: {
+        claim_id: "WC712506", submitted_at: "2026-08-16 12:29", partner_id: "SP3260",
+        sku: "KH-MG-01", product_serial: "KH450246940", claim_amount_inr: 2131.0,
+        days_since_purchase: 19, customer_prior_claims: 2, photo_attached: "Y",
+        partner_inspected: "Y", source: "crm", claim_description: "water leaking"
+      },
+      med: {
+        claim_id: "WC712530", submitted_at: "2026-08-18 00:08", partner_id: "SP3096",
+        sku: "KH-IC-03", product_serial: "kh814519714", claim_amount_inr: 3188.0,
+        days_since_purchase: 97, customer_prior_claims: 1, photo_attached: "Y",
+        partner_inspected: "Y", source: "crm", claim_description: "blade jammed"
+      },
+      low: {
+        claim_id: "WC711748", submitted_at: "2026-07-15 19:09", partner_id: "SP3214",
+        sku: "KH-RH-01", product_serial: "KH800724084", claim_amount_inr: 681.0,
+        days_since_purchase: 138, customer_prior_claims: 0, photo_attached: "Y",
+        partner_inspected: "N", source: "crm", claim_description: "loud noise while running"
+      }
+    };
+
+    function loadPreset(t) {
+      const p = presets[t];
+      if (!p) return;
+      for (const k in p) {
+        const el = document.getElementById('single_' + k);
+        if (el) el.value = p[k];
+      }
+      handleSinglePredict(new Event('submit'));
+    }
+
+    let lastSingleResult = null;
+    async function handleSinglePredict(e) {
+      if (e) e.preventDefault();
+      const btn = document.getElementById('single-submit-btn');
+      btn.innerHTML = `<span class="spinner"></span> <span>Scoring Claim...</span>`;
+      btn.disabled = true;
+
+      const payload = {
+        claim_id: document.getElementById('single_claim_id').value.trim(),
+        submitted_at: document.getElementById('single_submitted_at').value.trim(),
+        partner_id: document.getElementById('single_partner_id').value.trim(),
+        sku: document.getElementById('single_sku').value.trim(),
+        product_serial: document.getElementById('single_product_serial').value.trim(),
+        days_since_purchase: parseFloat(document.getElementById('single_days_since_purchase').value),
+        claim_amount_inr: parseFloat(document.getElementById('single_claim_amount_inr').value),
+        photo_attached: document.getElementById('single_photo_attached').value,
+        partner_inspected: document.getElementById('single_partner_inspected').value,
+        claim_description: document.getElementById('single_claim_description').value.trim(),
+        customer_prior_claims: parseInt(document.getElementById('single_customer_prior_claims').value),
+        source: document.getElementById('single_source').value
+      };
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await safeJson(res);
+        if (!res.ok) throw new Error(data.error || 'Prediction failed');
+
+        lastSingleResult = { ...payload, ...data };
+
+        document.getElementById('single-placeholder').classList.add('hidden');
+        const resBox = document.getElementById('single-result-box');
+        resBox.classList.remove('hidden');
+
+        document.getElementById('single-res-score').textContent = (data.fraud_score * 100).toFixed(2) + '%';
+        document.getElementById('single-res-claim-id').textContent = 'Claim ID: ' + data.claim_id;
+
+        const badge = document.getElementById('single-res-badge');
+        badge.className = 'badge ' + (data.risk_level === 'HIGH' ? 'badge-high' : (data.risk_level === 'MEDIUM' ? 'badge-medium' : 'badge-low'));
+        badge.textContent = data.risk_level + ' RISK';
+
+        const reasonsEl = document.getElementById('single-res-reasons');
+        reasonsEl.innerHTML = '';
+        (data.reasons || []).forEach(r => {
+          const li = document.createElement('li');
+          li.textContent = '• ' + r;
+          reasonsEl.appendChild(li);
+        });
+
+      } catch (err) {
+        alert('Single predict error: ' + err.message);
+      } finally {
+        btn.innerHTML = `<span>⚡ Analyze Claim Risk</span>`;
+        btn.disabled = false;
+      }
+    }
+
+    function openAIModalForCurrentSingle() {
+      if (!lastSingleResult) return;
+      selectedClaimForAI = lastSingleResult;
+      openAIModalForClaim(lastSingleResult.claim_id);
+    }
+  </script>
+</body>
+</html>

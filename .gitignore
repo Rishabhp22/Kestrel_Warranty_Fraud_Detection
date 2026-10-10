@@ -1,0 +1,24 @@
+# Environment configuration & secrets (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary runtime files & uploads
+outputs/alerts.db
+outputs/bulk_scored_latest.csv
+*.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
