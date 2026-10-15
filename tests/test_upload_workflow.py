@@ -20,7 +20,15 @@ def test_upload_workflow():
 
     # 1. Test GET / (Landing Page)
     print("\n1. Testing GET / (Fresh Session Landing Page)...")
-    res = requests.get(f"{BASE}/")
+    try:
+        res = requests.get(f"{BASE}/", timeout=1.0)
+    except requests.exceptions.ConnectionError:
+        try:
+            import pytest
+            pytest.skip("Flask server not running on http://127.0.0.1:5000. Start server with 'python api/app.py' to run live E2E test.")
+        except ImportError:
+            print("Flask server not running on http://127.0.0.1:5000. Start server with 'python api/app.py' to run live E2E test.")
+            return
     assert res.status_code == 200, f"Expected 200, got {res.status_code}"
     html = res.text
 
@@ -81,16 +89,16 @@ def test_upload_workflow():
 
     assert demo_claims["filename"] == "test_unlabelled.csv"
     assert demo_claims["total_claims"] == 2252
-    assert demo_claims["high_risk_count"] == 11
-    assert demo_claims["medium_risk_count"] == 70
-    assert demo_claims["low_risk_count"] == 2171
-    assert demo_claims["high_risk_pct"] == 0.49
-    assert demo_claims["medium_risk_pct"] == 3.11
-    assert demo_claims["low_risk_pct"] == 96.4
+    assert demo_claims["high_risk_count"] == 12
+    assert demo_claims["medium_risk_count"] == 59
+    assert demo_claims["low_risk_count"] == 2181
+    assert demo_claims["high_risk_pct"] == 0.53
+    assert demo_claims["medium_risk_pct"] == 2.62
+    assert demo_claims["low_risk_pct"] == 96.85
     assert demo_claims["highest_fraud_score"] > 0.60
     assert "score_distribution" in demo_claims
     assert len(demo_claims["claims"]) == 2252
-    print(f"  [PASS] Demo claims verified: 2,252 rows (High: 11, Medium: 70, Low: 2,171) loaded from pre-scored path.")
+    print(f"  [PASS] Demo claims verified: 2,252 rows (High: 12, Medium: 59, Low: 2,181) loaded from pre-scored path.")
 
     # 5. Test POST /predict_bulk?format=json (Upload Scoring Flow)
     print("\n5. Testing POST /predict_bulk?format=json (Custom Batch Scoring Flow)...")

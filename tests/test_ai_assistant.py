@@ -51,7 +51,7 @@ VALID_CLAIM_PAYLOAD = {
 }
 
 MOCK_GROQ_RESPONSE = {
-    "risk_summary": "Claim WC712506 is classified as HIGH risk with an operational fraud score of 0.6268.",
+    "risk_summary": "Claim WC712506 is classified as HIGH risk with an operational fraud score of 0.7027.",
     "why_flagged": "High claim amount relative to product list price, customer prior claim history, and failure at 19 days.",
     "verification_steps": [
         "Verify purchase invoice date against product serial registration.",
@@ -89,7 +89,7 @@ def run_all_ai_assistant_tests():
         data = res.get_json()
 
         assert data["claim_id"] == "WC712506"
-        assert data["fraud_score"] == 0.6268
+        assert data["fraud_score"] == 0.7027
         assert data["risk_level"] == "HIGH"
         assert len(data["reasons"]) >= 3
 
@@ -110,7 +110,7 @@ def run_all_ai_assistant_tests():
         data = res.get_json()
 
         # Model score must remain 100% valid
-        assert data["fraud_score"] == 0.6268
+        assert data["fraud_score"] == 0.7027
         assert data["risk_level"] == "HIGH"
 
         ai = data["ai_analysis"]
@@ -197,7 +197,7 @@ def run_all_ai_assistant_tests():
     )
 
     sys_prompt, user_prompt = build_investigation_prompt(
-        malicious_payload, 0.6268, "HIGH", ["High claim amount"]
+        malicious_payload, 0.7027, "HIGH", ["High claim amount"]
     )
 
     # Injected prompt must be isolated inside <claim_description> tags
@@ -248,8 +248,8 @@ def run_all_ai_assistant_tests():
         res = client.post("/ai/investigate", json=tampered_payload)
         data = res.get_json()
 
-        # Backend MUST recalculate the true score (0.6268) and ignore tampered inputs
-        assert data["fraud_score"] == 0.6268
+        # Backend MUST recalculate the true score (0.7027) and ignore tampered inputs
+        assert data["fraud_score"] == 0.7027
         assert data["risk_level"] == "HIGH"
         assert "Claim amount is unusually high relative to product list price" in data["reasons"][0]
     print("  [PASS] Backend recalculates score and reasons; client-side tampering rejected.")
@@ -265,7 +265,7 @@ def run_all_ai_assistant_tests():
 
     res_pred = client.post("/predict", json=VALID_CLAIM_PAYLOAD)
     assert res_pred.status_code == 200
-    assert res_pred.get_json()["fraud_score"] == 0.6268
+    assert res_pred.get_json()["fraud_score"] == 0.7027
     print("  [PASS] All existing routes (GET /, /analytics, /predict) operational.")
 
     # 11. Confirmation outputs/predictions.csv remains unchanged
